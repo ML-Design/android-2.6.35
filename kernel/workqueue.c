@@ -48,40 +48,25 @@ struct cpu_workqueue_struct {
 	wait_queue_head_t more_work;
 	struct work_struct *current_work;
 
-	struct workqueue_struct *wq;            /* I: the owning workqueue */
-	struct task_struct      *thread;
-
-};
+	struct workqueue_struct *wq;
+	struct task_struct *thread;
+} ____cacheline_aligned;
 
 /*
  * The externally visible workqueue abstraction is an array of
  * per-CPU workqueues:
  */
 struct workqueue_struct {
-	unsigned int            flags;          /* I: WQ_* flags */
 	struct cpu_workqueue_struct *cpu_wq;
 	struct list_head list;
 	const char *name;
+	int singlethread;
+	int freezeable;		/* Freeze threads during suspend */
 	int rt;
 #ifdef CONFIG_LOCKDEP
 	struct lockdep_map lockdep_map;
 #endif
 };
-
-#ifdef CONFIG_LOCKDEP
-/**
- * in_workqueue_context() - in context of specified workqueue?
- * @wq: the workqueue of interest
- *
- * Checks lockdep state to see if the current task is executing from
- * within a workqueue item.  This function exists only if lockdep is
- * enabled.
- */
-int in_workqueue_context(struct workqueue_struct *wq)
-{
-       return lock_is_held(&wq->lockdep_map);
-}
-#endif
 
 #ifdef CONFIG_DEBUG_OBJECTS_WORK
 
@@ -122,7 +107,7 @@ static int work_fixup_activate(void *addr, enum debug_obj_state state)
 		 * statically initialized. We just make sure that it
 		 * is tracked in the object tracker.
 		 */
-		if (test_bit(WORK_STRUCT_STATIC_BIT, work_data_bits(work))) {
+		if (test_bit(WORK_STRUCT_STATIC, work_data_bits(work))) {
 			debug_object_init(work, &work_debug_descr);
 			debug_object_activate(work, &work_debug_descr);
 			return 0;
@@ -209,9 +194,9 @@ static const struct cpumask *cpu_singlethread_map __read_mostly;
 static cpumask_var_t cpu_populated_map __read_mostly;
 
 /* If it's single threaded, it isn't in the list of workqueues. */
-static inline bool is_wq_single_threaded(struct workqueue_struct *wq)
+static inline int is_wq_single_threaded(struct workqueue_struct *wq)
 {
-	return wq->flags & WQ_SINGLE_THREAD;
+	return wq->singlethread;
 }
 
 static const struct cpumask *wq_cpu_map(struct workqueue_struct *wq)
@@ -220,8 +205,8 @@ static const struct cpumask *wq_cpu_map(struct workqueue_struct *wq)
 		? cpu_singlethread_map : cpu_populated_map;
 }
 
-static struct cpu_workqueue_struct *get_cwq(unsigned int cpu,
-						struct workqueue_struct *wq)
+static
+struct cpu_workqueue_struct *wq_per_cpu(struct workqueue_struct *wq, int cpu)
 {
 	if (unlikely(is_wq_single_threaded(wq)))
 		cpu = singlethread_cpu;
@@ -233,13 +218,15 @@ static struct cpu_workqueue_struct *get_cwq(unsigned int cpu,
  * - Must *only* be called if the pending flag is set
  */
 static inline void set_wq_data(struct work_struct *work,
-				struct cpu_workqueue_struct *cwq,
-				unsigned long extra_flags)
+				struct cpu_workqueue_struct *cwq)
 {
+	unsigned long new;
+
 	BUG_ON(!work_pending(work));
 
-       atomic_long_set(&work->data, (unsigned long)cwq | work_static(work) |
-                       WORK_STRUCT_PENDING | extra_flags);
+	new = (unsigned long) cwq | (1UL << WORK_STRUCT_PENDING);
+	new |= WORK_STRUCT_FLAG_MASK & *work_data_bits(work);
+	atomic_long_set(&work->data, new);
 }
 
 /*
@@ -247,7 +234,9 @@ static inline void set_wq_data(struct work_struct *work,
  */
 static inline void clear_wq_data(struct work_struct *work)
 {
-	atomic_long_set(&work->data, work_static(work));
+	unsigned long flags = *work_data_bits(work) &
+				(1UL << WORK_STRUCT_STATIC);
+	atomic_long_set(&work->data, flags);
 }
 
 static inline
@@ -257,33 +246,28 @@ struct cpu_workqueue_struct *get_wq_data(struct work_struct *work)
 }
 
 static void insert_work(struct cpu_workqueue_struct *cwq,
-			struct work_struct *work, struct list_head *head,
-			unsigned int extra_flags)
+			struct work_struct *work, struct list_head *head)
 {
 	trace_workqueue_insertion(cwq->thread, work);
-	
-	set_wq_data(work, cwq, extra_flags);
-	
+
+	set_wq_data(work, cwq);
 	/*
 	 * Ensure that we get the right work->data if we see the
 	 * result of list_add() below, see try_to_grab_pending().
 	 */
 	smp_wmb();
-	
 	list_add_tail(&work->entry, head);
 	wake_up(&cwq->more_work);
 }
 
-static void __queue_work(unsigned int cpu, struct workqueue_struct *wq,
+static void __queue_work(struct cpu_workqueue_struct *cwq,
 			 struct work_struct *work)
 {
-	struct cpu_workqueue_struct *cwq = get_cwq(cpu, wq);
 	unsigned long flags;
 
 	debug_work_activate(work);
 	spin_lock_irqsave(&cwq->lock, flags);
-	BUG_ON(!list_empty(&work->entry));
-	insert_work(cwq, work, &cwq->worklist, 0);
+	insert_work(cwq, work, &cwq->worklist);
 	spin_unlock_irqrestore(&cwq->lock, flags);
 }
 
@@ -324,8 +308,9 @@ queue_work_on(int cpu, struct workqueue_struct *wq, struct work_struct *work)
 {
 	int ret = 0;
 
-	if (!test_and_set_bit(WORK_STRUCT_PENDING_BIT, work_data_bits(work))) {
-		__queue_work(cpu, wq, work);
+	if (!test_and_set_bit(WORK_STRUCT_PENDING, work_data_bits(work))) {
+		BUG_ON(!list_empty(&work->entry));
+		__queue_work(wq_per_cpu(wq, cpu), work);
 		ret = 1;
 	}
 	return ret;
@@ -336,8 +321,9 @@ static void delayed_work_timer_fn(unsigned long __data)
 {
 	struct delayed_work *dwork = (struct delayed_work *)__data;
 	struct cpu_workqueue_struct *cwq = get_wq_data(&dwork->work);
+	struct workqueue_struct *wq = cwq->wq;
 
-	__queue_work(smp_processor_id(), cwq->wq, &dwork->work);
+	__queue_work(wq_per_cpu(wq, smp_processor_id()), &dwork->work);
 }
 
 /**
@@ -374,14 +360,14 @@ int queue_delayed_work_on(int cpu, struct workqueue_struct *wq,
 	struct timer_list *timer = &dwork->timer;
 	struct work_struct *work = &dwork->work;
 
-	if (!test_and_set_bit(WORK_STRUCT_PENDING_BIT, work_data_bits(work))) {
+	if (!test_and_set_bit(WORK_STRUCT_PENDING, work_data_bits(work))) {
 		BUG_ON(timer_pending(timer));
 		BUG_ON(!list_empty(&work->entry));
 
 		timer_stats_timer_set_start_info(&dwork->timer);
 
 		/* This stores cwq for the moment, for the timer_fn */
-		set_wq_data(work, get_cwq(raw_smp_processor_id(), wq), 0);
+		set_wq_data(work, wq_per_cpu(wq, raw_smp_processor_id()));
 		timer->expires = jiffies + delay;
 		timer->data = (unsigned long)dwork;
 		timer->function = delayed_work_timer_fn;
@@ -450,7 +436,7 @@ static int worker_thread(void *__cwq)
 	struct cpu_workqueue_struct *cwq = __cwq;
 	DEFINE_WAIT(wait);
 
-	if (cwq->wq->flags & WQ_FREEZEABLE)
+	if (cwq->wq->freezeable)
 		set_freezable();
 
 	for (;;) {
@@ -493,12 +479,12 @@ static void insert_wq_barrier(struct cpu_workqueue_struct *cwq,
 	 * might deadlock.
 	 */
 	INIT_WORK_ON_STACK(&barr->work, wq_barrier_func);
-	__set_bit(WORK_STRUCT_PENDING_BIT, work_data_bits(&barr->work));
+	__set_bit(WORK_STRUCT_PENDING, work_data_bits(&barr->work));
 
 	init_completion(&barr->done);
 
 	debug_work_activate(&barr->work);
-	insert_work(cwq, &barr->work, head, 0);
+	insert_work(cwq, &barr->work, head);
 }
 
 static int flush_cpu_workqueue(struct cpu_workqueue_struct *cwq)
@@ -573,6 +559,7 @@ int flush_work(struct work_struct *work)
 	lock_map_acquire(&cwq->wq->lockdep_map);
 	lock_map_release(&cwq->wq->lockdep_map);
 
+	prev = NULL;
 	spin_lock_irq(&cwq->lock);
 	if (!list_empty(&work->entry)) {
 		/*
@@ -581,22 +568,22 @@ int flush_work(struct work_struct *work)
 		 */
 		smp_rmb();
 		if (unlikely(cwq != get_wq_data(work)))
-			goto already_gone;
+			goto out;
 		prev = &work->entry;
 	} else {
 		if (cwq->current_work != work)
-			goto already_gone;
+			goto out;
 		prev = &cwq->worklist;
 	}
 	insert_wq_barrier(cwq, &barr, prev->next);
-
+out:
 	spin_unlock_irq(&cwq->lock);
+	if (!prev)
+		return 0;
+
 	wait_for_completion(&barr.done);
 	destroy_work_on_stack(&barr.work);
 	return 1;
-already_gone:
-       spin_unlock_irq(&cwq->lock);
-       return 0;
 }
 EXPORT_SYMBOL_GPL(flush_work);
 
@@ -609,7 +596,7 @@ static int try_to_grab_pending(struct work_struct *work)
 	struct cpu_workqueue_struct *cwq;
 	int ret = -1;
 
-	if (!test_and_set_bit(WORK_STRUCT_PENDING_BIT, work_data_bits(work)))
+	if (!test_and_set_bit(WORK_STRUCT_PENDING, work_data_bits(work)))
 		return 0;
 
 	/*
@@ -679,7 +666,7 @@ static void wait_on_work(struct work_struct *work)
 	cpu_map = wq_cpu_map(wq);
 
 	for_each_cpu(cpu, cpu_map)
-		wait_on_cpu_work(get_cwq(cpu, wq), work);
+		wait_on_cpu_work(per_cpu_ptr(wq->cpu_wq, cpu), work);
 }
 
 static int __cancel_work_timer(struct work_struct *work,
@@ -796,8 +783,9 @@ EXPORT_SYMBOL(schedule_delayed_work);
 void flush_delayed_work(struct delayed_work *dwork)
 {
 	if (del_timer_sync(&dwork->timer)) {
-               __queue_work(get_cpu(), get_wq_data(&dwork->work)->wq,
-                            &dwork->work);
+		struct cpu_workqueue_struct *cwq;
+		cwq = wq_per_cpu(get_wq_data(&dwork->work)->wq, get_cpu());
+		__queue_work(cwq, &dwork->work);
 		put_cpu();
 	}
 	flush_work(&dwork->work);
@@ -957,55 +945,9 @@ init_cpu_workqueue(struct workqueue_struct *wq, int cpu)
 	return cwq;
 }
 
-static struct cpu_workqueue_struct *alloc_cwqs(void)
-{
-       /*
-        * cwqs are forced aligned according to WORK_STRUCT_FLAG_BITS.
-        * Make sure that the alignment isn't lower than that of
-        * unsigned long long.
-        */
-       const size_t size = sizeof(struct cpu_workqueue_struct);
-       const size_t align = max_t(size_t, 1 << WORK_STRUCT_FLAG_BITS,
-                                  __alignof__(unsigned long long));
-       struct cpu_workqueue_struct *cwqs;
-#ifndef CONFIG_SMP
-       void *ptr;
-
-       /*
-        * On UP, percpu allocator doesn't honor alignment parameter
-        * and simply uses arch-dependent default.  Allocate enough
-        * room to align cwq and put an extra pointer at the end
-        * pointing back to the originally allocated pointer which
-        * will be used for free.
-        *
-        * FIXME: This really belongs to UP percpu code.  Update UP
-        * percpu code to honor alignment and remove this ugliness.
-        */
-       ptr = __alloc_percpu(size + align + sizeof(void *), 1);
-       cwqs = PTR_ALIGN(ptr, align);
-       *(void **)per_cpu_ptr(cwqs + 1, 0) = ptr;
-#else
-       /* On SMP, percpu allocator can do it itself */
-       cwqs = __alloc_percpu(size, align);
-#endif
-       /* just in case, make sure it's actually aligned */
-       BUG_ON(!IS_ALIGNED((unsigned long)cwqs, align));
-       return cwqs;
-}
-
-static void free_cwqs(struct cpu_workqueue_struct *cwqs)
-{
-#ifndef CONFIG_SMP
-       /* on UP, the pointer to free is stored right after the cwq */
-       if (cwqs)
-               free_percpu(*(void **)per_cpu_ptr(cwqs + 1, 0));
-#else
-       free_percpu(cwqs);
-#endif
-}
-
 static int create_workqueue_thread(struct cpu_workqueue_struct *cwq, int cpu)
 {
+	struct sched_param param = { .sched_priority = MAX_RT_PRIO-1 };
 	struct workqueue_struct *wq = cwq->wq;
 	const char *fmt = is_wq_single_threaded(wq) ? "%s" : "%s/%d";
 	struct task_struct *p;
@@ -1021,7 +963,8 @@ static int create_workqueue_thread(struct cpu_workqueue_struct *cwq, int cpu)
 	 */
 	if (IS_ERR(p))
 		return PTR_ERR(p);
-
+	if (cwq->wq->rt)
+		sched_setscheduler_nocheck(p, SCHED_FIFO, &param);
 	cwq->thread = p;
 
 	trace_workqueue_creation(cwq->thread, cpu);
@@ -1041,7 +984,9 @@ static void start_workqueue_thread(struct cpu_workqueue_struct *cwq, int cpu)
 }
 
 struct workqueue_struct *__create_workqueue_key(const char *name,
-						unsigned int flags,
+						int singlethread,
+						int freezeable,
+						int rt,
 						struct lock_class_key *key,
 						const char *lock_name)
 {
@@ -1051,18 +996,22 @@ struct workqueue_struct *__create_workqueue_key(const char *name,
 
 	wq = kzalloc(sizeof(*wq), GFP_KERNEL);
 	if (!wq)
-		goto err;
+		return NULL;
 
-	wq->cpu_wq = alloc_cwqs();
-	if (!wq->cpu_wq)
-		goto err;
+	wq->cpu_wq = alloc_percpu(struct cpu_workqueue_struct);
+	if (!wq->cpu_wq) {
+		kfree(wq);
+		return NULL;
+	}
 
-	wq->flags = flags;
 	wq->name = name;
 	lockdep_init_map(&wq->lockdep_map, lock_name, key, 0);
+	wq->singlethread = singlethread;
+	wq->freezeable = freezeable;
+	wq->rt = rt;
 	INIT_LIST_HEAD(&wq->list);
 
-	if (flags & WQ_SINGLE_THREAD) {
+	if (singlethread) {
 		cwq = init_cpu_workqueue(wq, singlethread_cpu);
 		err = create_workqueue_thread(cwq, singlethread_cpu);
 		start_workqueue_thread(cwq, -1);
@@ -1085,7 +1034,6 @@ struct workqueue_struct *__create_workqueue_key(const char *name,
 		 */
 		for_each_possible_cpu(cpu) {
 			cwq = init_cpu_workqueue(wq, cpu);
-			
 			if (err || !cpu_online(cpu))
 				continue;
 			err = create_workqueue_thread(cwq, cpu);
@@ -1099,12 +1047,6 @@ struct workqueue_struct *__create_workqueue_key(const char *name,
 		wq = NULL;
 	}
 	return wq;
-err:
-       if (wq) {
-               free_cwqs(wq->cpu_wq);
-               kfree(wq);
-       }
-       return NULL;
 }
 EXPORT_SYMBOL_GPL(__create_workqueue_key);
 
@@ -1156,7 +1098,7 @@ void destroy_workqueue(struct workqueue_struct *wq)
 		cleanup_workqueue_thread(per_cpu_ptr(wq->cpu_wq, cpu));
  	cpu_maps_update_done();
 
-	free_cwqs(wq->cpu_wq);
+	free_percpu(wq->cpu_wq);
 	kfree(wq);
 }
 EXPORT_SYMBOL_GPL(destroy_workqueue);
