@@ -623,7 +623,6 @@ static bool flush_workqueue_prep_cwqs(struct workqueue_struct *wq,
 		BUG_ON(atomic_read(&wq->nr_cwqs_to_flush));
 		atomic_set(&wq->nr_cwqs_to_flush, 1);
 	}
-	spin_unlock_irq(&cwq->lock);
 
        for_each_possible_cpu(cpu) {
                struct cpu_workqueue_struct *cwq = get_cwq(cpu, wq);
@@ -669,8 +668,6 @@ static bool flush_workqueue_prep_cwqs(struct workqueue_struct *wq,
  */
 void flush_workqueue(struct workqueue_struct *wq)
 {
-	const struct cpumask *cpu_map = wq_cpu_map(wq);
-
        struct wq_flusher this_flusher = {
                .list = LIST_HEAD_INIT(this_flusher.list),
                .flush_color = -1,
@@ -1384,7 +1381,6 @@ EXPORT_SYMBOL_GPL(__create_workqueue_key);
  */
 void destroy_workqueue(struct workqueue_struct *wq)
 {
-	const struct cpumask *cpu_map = wq_cpu_map(wq);
 	int cpu;
 
 	cpu_maps_update_begin();
@@ -1425,41 +1421,17 @@ static int __devinit workqueue_cpu_callback(struct notifier_block *nfb,
 
 	action &= ~CPU_TASKS_FROZEN;
 
-	switch (action) {
-	case CPU_UP_PREPARE:
-		cpumask_set_cpu(cpu, cpu_populated_map);
-	}
-undo:
 	list_for_each_entry(wq, &workqueues, list) {
-		cwq = per_cpu_ptr(wq->cpu_wq, cpu);
-
+		if (wq->flags & WQ_SINGLE_THREAD)
+			continue;
+			
+		cwq = get_cwq(cpu, wq);
+		
 		switch (action) {
-		case CPU_UP_PREPARE:
-			err = create_workqueue_thread(cwq, cpu);
-			if (!err)
-				break;
-			printk(KERN_ERR "workqueue [%s] for %i failed\n",
-				wq->name, cpu);
-			action = CPU_UP_CANCELED;
-			err = -ENOMEM;
-			goto undo;
-
-		case CPU_ONLINE:
-			start_workqueue_thread(cwq, cpu);
-			break;
-
-		case CPU_UP_CANCELED:
-			start_workqueue_thread(cwq, -1);
 		case CPU_POST_DEAD:
-			cleanup_workqueue_thread(cwq);
+			flush_workqueue(wq);
 			break;
 		}
-	}
-
-	switch (action) {
-	case CPU_UP_CANCELED:
-	case CPU_POST_DEAD:
-		flush_workqueue(wq);
 	}
 
 	return notifier_from_errno(err);
