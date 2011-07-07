@@ -182,6 +182,7 @@ static inline void destroy_work_on_stack(struct work_struct *work) { }
 
 extern struct workqueue_struct *
 __create_workqueue_key(const char *name, int singlethread, int freezeable,
+			struct lock_class_key *key, const char *lock_name);
 
 #ifdef CONFIG_LOCKDEP
 #define __create_workqueue(name, singlethread, freezeable)	\
@@ -195,7 +196,7 @@ __create_workqueue_key(const char *name, int singlethread, int freezeable,
 		__lock_name = #name;				\
 								\
 	__create_workqueue_key((name), (singlethread),		\
-			       (freezeable), (rt), &__key,	\
+			       (freezeable), &__key,		\
 			       __lock_name);			\
 })
 #else
