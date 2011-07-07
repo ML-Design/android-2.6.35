@@ -26,8 +26,10 @@ enum {
        WORK_STRUCT_PENDING_BIT = 0,    /* work item is pending execution */
 #ifdef CONFIG_DEBUG_OBJECTS_WORK
        WORK_STRUCT_STATIC_BIT  = 1,    /* static initializer (debugobjects) */
+       WORK_STRUCT_FLAG_BITS   = 2,
        WORK_STRUCT_COLOR_SHIFT = 3,    /* color for workqueue flushing */
 #else
+       WORK_STRUCT_FLAG_BITS   = 1,
        WORK_STRUCT_COLOR_SHIFT = 2,    /* color for workqueue flushing */
 #endif
 	WORK_STRUCT_COLOR_BITS  = 4,
