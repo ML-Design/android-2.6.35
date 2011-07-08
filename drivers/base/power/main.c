@@ -62,6 +62,7 @@ static bool transition_started;
 void device_pm_init(struct device *dev)
 {
 	dev->power.status = DPM_ON;
+	dev->power.wakeup_count = 0;
 	init_completion(&dev->power.completion);
 	complete_all(&dev->power.completion);
 	pm_runtime_init(dev);
