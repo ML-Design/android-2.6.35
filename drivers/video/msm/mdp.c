@@ -172,6 +172,7 @@ static int mdp_lut_update_nonlcdc(struct fb_info *info, struct fb_cmap *cmap)
 	if (ret)
 		return ret;
 
+	dsb();
 	mutex_lock(&mdp_lut_push_sem);
 	mdp_lut_push = 1;
 	mdp_lut_push_i = mdp_lut_i;
@@ -203,13 +204,14 @@ static int mdp_lut_update_lcdc(struct fb_info *info, struct fb_cmap *cmap)
 
 static void mdp_lut_enable(void)
 {
+	mutex_lock(&mdp_lut_push_sem);
 	if (mdp_lut_push) {
-		mutex_lock(&mdp_lut_push_sem);
 		mdp_lut_push = 0;
+		dsb();
 		MDP_OUTP(MDP_BASE + 0x90070,
 				(mdp_lut_push_i << 10) | 0x17);
-		mutex_unlock(&mdp_lut_push_sem);
 	}
+	mutex_unlock(&mdp_lut_push_sem);
 }
 
 #define MDP_HIST_MAX_BIN 32
@@ -584,6 +586,7 @@ void mdp_pipe_ctrl(MDP_BLOCK_TYPE block, MDP_BLOCK_POWER_STATE state,
 		if ((mdp_all_blocks_off) && (mdp_current_clk_on)) {
 			if (block == MDP_MASTER_BLOCK) {
 				mdp_current_clk_on = FALSE;
+				dsb();
 				if (footswitch != NULL)
 					regulator_disable(footswitch);
 				/* turn off MDP clks */
