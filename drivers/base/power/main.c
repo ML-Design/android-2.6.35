@@ -62,9 +62,10 @@ static bool transition_started;
 void device_pm_init(struct device *dev)
 {
 	dev->power.status = DPM_ON;
-	dev->power.wakeup_count = 0;
 	init_completion(&dev->power.completion);
 	complete_all(&dev->power.completion);
+	dev->power.wakeup = NULL;
+	spin_lock_init(&dev->power.lock);
 	pm_runtime_init(dev);
 }
 
@@ -124,6 +125,7 @@ void device_pm_remove(struct device *dev)
 	mutex_lock(&dpm_list_mtx);
 	list_del_init(&dev->power.entry);
 	mutex_unlock(&dpm_list_mtx);
+	device_wakeup_disable(dev);
 	pm_runtime_remove(dev);
 }
 
@@ -890,11 +892,6 @@ static int __device_suspend(struct device *dev, pm_message_t state, bool async)
 
 	if (async_error)
 		goto End;
-		
-	if (pm_wakeup_pending()) {
-		async_error = -EBUSY;
-		goto End;
-	}
 
 	if (dev->class) {
 		if (dev->class->pm) {
