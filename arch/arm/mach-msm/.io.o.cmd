@@ -1,4 +1,4 @@
-cmd_arch/arm/mach-msm/io.o := arm-eabi-gcc -Wp,-MD,arch/arm/mach-msm/.io.o.d  -nostdinc -isystem /home/hyunwoo82.park/gb_original/prebuilt/linux-x86/toolchain/arm-eabi-4.4.3/bin/../lib/gcc/arm-eabi/4.4.3/include -I/home/hyunwoo82.park/kernel/kernel/arch/arm/include -Iinclude  -include include/generated/autoconf.h -D__KERNEL__ -mlittle-endian -Iarch/arm/mach-msm/include -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -Werror -fno-strict-aliasing -fno-common -Werror-implicit-function-declaration -Wno-format-security -fno-delete-null-pointer-checks -Os -marm -mabi=aapcs-linux -mno-thumb-interwork -funwind-tables -D__LINUX_ARM_ARCH__=6 -march=armv6k -mtune=arm1136j-s -msoft-float -Uarm -Wframe-larger-than=2112 -fno-stack-protector -fomit-frame-pointer -g -Wdeclaration-after-statement -Wno-pointer-sign -fno-strict-overflow -fconserve-stack   -D"KBUILD_STR(s)=\#s" -D"KBUILD_BASENAME=KBUILD_STR(io)"  -D"KBUILD_MODNAME=KBUILD_STR(io)" -D"DEBUG_HASH=44" -D"DEBUG_HASH2=35" -c -o arch/arm/mach-msm/io.o arch/arm/mach-msm/io.c
+cmd_arch/arm/mach-msm/io.o := /home/andy/CodeAurora/prebuilt/linux-x86/toolchain/arm-eabi-4.4.3/bin/arm-eabi-gcc -Wp,-MD,arch/arm/mach-msm/.io.o.d  -nostdinc -isystem /home/andy/CodeAurora/prebuilt/linux-x86/toolchain/arm-eabi-4.4.3/bin/../lib/gcc/arm-eabi/4.4.3/include -I/home/andy/2.6.35/arch/arm/include -Iinclude  -include include/generated/autoconf.h -D__KERNEL__ -mlittle-endian -Iarch/arm/mach-msm/include -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -Werror -fno-strict-aliasing -fno-common -Werror-implicit-function-declaration -Wno-format-security -fno-delete-null-pointer-checks -Os -marm -mabi=aapcs-linux -mno-thumb-interwork -funwind-tables -D__LINUX_ARM_ARCH__=6 -march=armv6k -mtune=arm1136j-s -msoft-float -Uarm -Wframe-larger-than=1536 -fno-stack-protector -fomit-frame-pointer -g -Wdeclaration-after-statement -Wno-pointer-sign -fno-strict-overflow -fconserve-stack   -D"KBUILD_STR(s)=\#s" -D"KBUILD_BASENAME=KBUILD_STR(io)"  -D"KBUILD_MODNAME=KBUILD_STR(io)" -D"DEBUG_HASH=44" -D"DEBUG_HASH2=35" -c -o arch/arm/mach-msm/io.o arch/arm/mach-msm/io.c
 
 deps_arch/arm/mach-msm/io.o := \
   arch/arm/mach-msm/io.c \
@@ -23,7 +23,7 @@ deps_arch/arm/mach-msm/io.o := \
     $(wildcard include/config/tracing.h) \
     $(wildcard include/config/numa.h) \
     $(wildcard include/config/ftrace/mcount/record.h) \
-  /home/hyunwoo82.park/gb_original/prebuilt/linux-x86/toolchain/arm-eabi-4.4.3/bin/../lib/gcc/arm-eabi/4.4.3/include/stdarg.h \
+  /home/andy/CodeAurora/prebuilt/linux-x86/toolchain/arm-eabi-4.4.3/bin/../lib/gcc/arm-eabi/4.4.3/include/stdarg.h \
   include/linux/linkage.h \
   include/linux/compiler.h \
     $(wildcard include/config/trace/branch/profiling.h) \
@@ -34,25 +34,25 @@ deps_arch/arm/mach-msm/io.o := \
     $(wildcard include/config/arch/supports/optimized/inlining.h) \
     $(wildcard include/config/optimize/inlining.h) \
   include/linux/compiler-gcc4.h \
-  /home/hyunwoo82.park/kernel/kernel/arch/arm/include/asm/linkage.h \
+  /home/andy/2.6.35/arch/arm/include/asm/linkage.h \
   include/linux/stddef.h \
   include/linux/types.h \
     $(wildcard include/config/uid16.h) \
     $(wildcard include/config/phys/addr/t/64bit.h) \
     $(wildcard include/config/64bit.h) \
-  /home/hyunwoo82.park/kernel/kernel/arch/arm/include/asm/types.h \
+  /home/andy/2.6.35/arch/arm/include/asm/types.h \
   include/asm-generic/int-ll64.h \
-  /home/hyunwoo82.park/kernel/kernel/arch/arm/include/asm/bitsperlong.h \
+  /home/andy/2.6.35/arch/arm/include/asm/bitsperlong.h \
   include/asm-generic/bitsperlong.h \
   include/linux/posix_types.h \
-  /home/hyunwoo82.park/kernel/kernel/arch/arm/include/asm/posix_types.h \
+  /home/andy/2.6.35/arch/arm/include/asm/posix_types.h \
   include/linux/bitops.h \
     $(wildcard include/config/generic/find/first/bit.h) \
     $(wildcard include/config/generic/find/last/bit.h) \
     $(wildcard include/config/generic/find/next/bit.h) \
-  /home/hyunwoo82.park/kernel/kernel/arch/arm/include/asm/bitops.h \
+  /home/andy/2.6.35/arch/arm/include/asm/bitops.h \
     $(wildcard include/config/smp.h) \
-  /home/hyunwoo82.park/kernel/kernel/arch/arm/include/asm/system.h \
+  /home/andy/2.6.35/arch/arm/include/asm/system.h \
     $(wildcard include/config/cpu/xsc3.h) \
     $(wildcard include/config/cpu/fa526.h) \
     $(wildcard include/config/arch/has/barriers.h) \
@@ -66,12 +66,12 @@ deps_arch/arm/mach-msm/io.o := \
     $(wildcard include/config/preempt/tracer.h) \
     $(wildcard include/config/trace/irqflags/support.h) \
   include/linux/typecheck.h \
-  /home/hyunwoo82.park/kernel/kernel/arch/arm/include/asm/irqflags.h \
-  /home/hyunwoo82.park/kernel/kernel/arch/arm/include/asm/ptrace.h \
+  /home/andy/2.6.35/arch/arm/include/asm/irqflags.h \
+  /home/andy/2.6.35/arch/arm/include/asm/ptrace.h \
     $(wildcard include/config/cpu/endian/be8.h) \
     $(wildcard include/config/arm/thumb.h) \
-  /home/hyunwoo82.park/kernel/kernel/arch/arm/include/asm/hwcap.h \
-  /home/hyunwoo82.park/kernel/kernel/arch/arm/include/asm/outercache.h \
+  /home/andy/2.6.35/arch/arm/include/asm/hwcap.h \
+  /home/andy/2.6.35/arch/arm/include/asm/outercache.h \
     $(wildcard include/config/outer/cache/sync.h) \
     $(wildcard include/config/outer/cache.h) \
   arch/arm/mach-msm/include/mach/barriers.h \
@@ -87,26 +87,26 @@ deps_arch/arm/mach-msm/io.o := \
     $(wildcard include/config/arch/has/ilog2/u32.h) \
     $(wildcard include/config/arch/has/ilog2/u64.h) \
   include/linux/dynamic_debug.h \
-  /home/hyunwoo82.park/kernel/kernel/arch/arm/include/asm/byteorder.h \
+  /home/andy/2.6.35/arch/arm/include/asm/byteorder.h \
   include/linux/byteorder/little_endian.h \
   include/linux/swab.h \
-  /home/hyunwoo82.park/kernel/kernel/arch/arm/include/asm/swab.h \
+  /home/andy/2.6.35/arch/arm/include/asm/swab.h \
   include/linux/byteorder/generic.h \
-  /home/hyunwoo82.park/kernel/kernel/arch/arm/include/asm/bug.h \
+  /home/andy/2.6.35/arch/arm/include/asm/bug.h \
     $(wildcard include/config/bug.h) \
     $(wildcard include/config/debug/bugverbose.h) \
   include/asm-generic/bug.h \
     $(wildcard include/config/generic/bug.h) \
     $(wildcard include/config/generic/bug/relative/pointers.h) \
-  /home/hyunwoo82.park/kernel/kernel/arch/arm/include/asm/div64.h \
+  /home/andy/2.6.35/arch/arm/include/asm/div64.h \
   include/linux/init.h \
     $(wildcard include/config/modules.h) \
     $(wildcard include/config/hotplug.h) \
   include/linux/io.h \
     $(wildcard include/config/mmu.h) \
     $(wildcard include/config/has/ioport.h) \
-  /home/hyunwoo82.park/kernel/kernel/arch/arm/include/asm/io.h \
-  /home/hyunwoo82.park/kernel/kernel/arch/arm/include/asm/memory.h \
+  /home/andy/2.6.35/arch/arm/include/asm/io.h \
+  /home/andy/2.6.35/arch/arm/include/asm/memory.h \
     $(wildcard include/config/page/offset.h) \
     $(wildcard include/config/thumb2/kernel.h) \
     $(wildcard include/config/highmem.h) \
@@ -122,7 +122,7 @@ deps_arch/arm/mach-msm/io.o := \
     $(wildcard include/config/arch/msm/arm11.h) \
     $(wildcard include/config/arch/msm/scorpion.h) \
     $(wildcard include/config/arch/msm/scorpionmp.h) \
-  /home/hyunwoo82.park/kernel/kernel/arch/arm/include/asm/mach-types.h \
+  /home/andy/2.6.35/arch/arm/include/asm/mach-types.h \
   include/generated/mach-types.h \
     $(wildcard include/config/arch/ebsa110.h) \
     $(wildcard include/config/arch/rpc.h) \
@@ -3316,12 +3316,12 @@ deps_arch/arm/mach-msm/io.o := \
     $(wildcard include/config/mach/lead.h) \
     $(wildcard include/config/mach/unino1.h) \
     $(wildcard include/config/mach/msm8x60/qt.h) \
-  /home/hyunwoo82.park/kernel/kernel/arch/arm/include/asm/sizes.h \
+  /home/andy/2.6.35/arch/arm/include/asm/sizes.h \
   include/asm-generic/memory_model.h \
     $(wildcard include/config/flatmem.h) \
     $(wildcard include/config/sparsemem/vmemmap.h) \
   arch/arm/mach-msm/include/mach/io.h \
-  /home/hyunwoo82.park/kernel/kernel/arch/arm/include/asm/page.h \
+  /home/andy/2.6.35/arch/arm/include/asm/page.h \
     $(wildcard include/config/cpu/copy/v3.h) \
     $(wildcard include/config/cpu/copy/v4wt.h) \
     $(wildcard include/config/cpu/copy/v4wb.h) \
@@ -3330,7 +3330,7 @@ deps_arch/arm/mach-msm/io.o := \
     $(wildcard include/config/cpu/xscale.h) \
     $(wildcard include/config/cpu/copy/v6.h) \
     $(wildcard include/config/memory/hotplug/sparse.h) \
-  /home/hyunwoo82.park/kernel/kernel/arch/arm/include/asm/glue.h \
+  /home/andy/2.6.35/arch/arm/include/asm/glue.h \
     $(wildcard include/config/cpu/arm610.h) \
     $(wildcard include/config/cpu/arm710.h) \
     $(wildcard include/config/cpu/abrt/lv4t.h) \
@@ -3359,12 +3359,12 @@ deps_arch/arm/mach-msm/io.o := \
   include/linux/poison.h \
     $(wildcard include/config/illegal/pointer/value.h) \
   include/linux/prefetch.h \
-  /home/hyunwoo82.park/kernel/kernel/arch/arm/include/asm/processor.h \
-  /home/hyunwoo82.park/kernel/kernel/arch/arm/include/asm/cache.h \
+  /home/andy/2.6.35/arch/arm/include/asm/processor.h \
+  /home/andy/2.6.35/arch/arm/include/asm/cache.h \
     $(wildcard include/config/arm/l1/cache/shift.h) \
     $(wildcard include/config/aeabi.h) \
   include/linux/stat.h \
-  /home/hyunwoo82.park/kernel/kernel/arch/arm/include/asm/stat.h \
+  /home/andy/2.6.35/arch/arm/include/asm/stat.h \
   include/linux/time.h \
     $(wildcard include/config/arch/uses/gettimeoffset.h) \
   include/linux/cache.h \
@@ -3380,12 +3380,12 @@ deps_arch/arm/mach-msm/io.o := \
     $(wildcard include/config/preempt/notifiers.h) \
   include/linux/thread_info.h \
     $(wildcard include/config/compat.h) \
-  /home/hyunwoo82.park/kernel/kernel/arch/arm/include/asm/thread_info.h \
+  /home/andy/2.6.35/arch/arm/include/asm/thread_info.h \
     $(wildcard include/config/arm/thumbee.h) \
-  /home/hyunwoo82.park/kernel/kernel/arch/arm/include/asm/fpstate.h \
+  /home/andy/2.6.35/arch/arm/include/asm/fpstate.h \
     $(wildcard include/config/vfpv3.h) \
     $(wildcard include/config/iwmmxt.h) \
-  /home/hyunwoo82.park/kernel/kernel/arch/arm/include/asm/domain.h \
+  /home/andy/2.6.35/arch/arm/include/asm/domain.h \
     $(wildcard include/config/verify/permission/fault.h) \
     $(wildcard include/config/io/36.h) \
     $(wildcard include/config/emulate/domain/manager/v7.h) \
@@ -3402,7 +3402,7 @@ deps_arch/arm/mach-msm/io.o := \
   include/linux/spinlock_up.h \
   include/linux/rwlock.h \
   include/linux/spinlock_api_up.h \
-  /home/hyunwoo82.park/kernel/kernel/arch/arm/include/asm/atomic.h \
+  /home/andy/2.6.35/arch/arm/include/asm/atomic.h \
     $(wildcard include/config/generic/atomic64.h) \
   include/asm-generic/atomic-long.h \
   include/linux/math64.h \
@@ -3429,7 +3429,7 @@ deps_arch/arm/mach-msm/io.o := \
     $(wildcard include/config/holes/in/zone.h) \
     $(wildcard include/config/arch/has/holes/memorymodel.h) \
   include/linux/wait.h \
-  /home/hyunwoo82.park/kernel/kernel/arch/arm/include/asm/current.h \
+  /home/andy/2.6.35/arch/arm/include/asm/current.h \
   include/linux/threads.h \
     $(wildcard include/config/nr/cpus.h) \
     $(wildcard include/config/base/small.h) \
@@ -3439,7 +3439,7 @@ deps_arch/arm/mach-msm/io.o := \
   include/linux/bitmap.h \
   include/linux/string.h \
     $(wildcard include/config/binary/printf.h) \
-  /home/hyunwoo82.park/kernel/kernel/arch/arm/include/asm/string.h \
+  /home/andy/2.6.35/arch/arm/include/asm/string.h \
   include/linux/pageblock-flags.h \
     $(wildcard include/config/hugetlb/page.h) \
     $(wildcard include/config/hugetlb/page/size/variable.h) \
@@ -3449,14 +3449,14 @@ deps_arch/arm/mach-msm/io.o := \
     $(wildcard include/config/memory/hotremove.h) \
   include/linux/notifier.h \
   include/linux/errno.h \
-  /home/hyunwoo82.park/kernel/kernel/arch/arm/include/asm/errno.h \
+  /home/andy/2.6.35/arch/arm/include/asm/errno.h \
   include/asm-generic/errno.h \
   include/asm-generic/errno-base.h \
   include/linux/mutex.h \
     $(wildcard include/config/debug/mutexes.h) \
   include/linux/rwsem.h \
     $(wildcard include/config/rwsem/generic/spinlock.h) \
-  /home/hyunwoo82.park/kernel/kernel/arch/arm/include/asm/rwsem.h \
+  /home/andy/2.6.35/arch/arm/include/asm/rwsem.h \
   include/linux/srcu.h \
   include/linux/topology.h \
     $(wildcard include/config/sched/smt.h) \
@@ -3474,11 +3474,11 @@ deps_arch/arm/mach-msm/io.o := \
     $(wildcard include/config/need/per/cpu/page/first/chunk.h) \
     $(wildcard include/config/have/setup/per/cpu/area.h) \
   include/linux/pfn.h \
-  /home/hyunwoo82.park/kernel/kernel/arch/arm/include/asm/percpu.h \
+  /home/andy/2.6.35/arch/arm/include/asm/percpu.h \
   include/asm-generic/percpu.h \
   include/linux/percpu-defs.h \
     $(wildcard include/config/debug/force/weak/per/cpu.h) \
-  /home/hyunwoo82.park/kernel/kernel/arch/arm/include/asm/topology.h \
+  /home/andy/2.6.35/arch/arm/include/asm/topology.h \
   include/asm-generic/topology.h \
   include/linux/mmdebug.h \
     $(wildcard include/config/debug/virtual.h) \
@@ -3492,17 +3492,17 @@ deps_arch/arm/mach-msm/io.o := \
   include/linux/jiffies.h \
   include/linux/timex.h \
   include/linux/param.h \
-  /home/hyunwoo82.park/kernel/kernel/arch/arm/include/asm/param.h \
+  /home/andy/2.6.35/arch/arm/include/asm/param.h \
     $(wildcard include/config/hz.h) \
-  /home/hyunwoo82.park/kernel/kernel/arch/arm/include/asm/timex.h \
+  /home/andy/2.6.35/arch/arm/include/asm/timex.h \
   arch/arm/mach-msm/include/mach/timex.h \
   include/linux/debugobjects.h \
     $(wildcard include/config/debug/objects.h) \
     $(wildcard include/config/debug/objects/free.h) \
   include/linux/elf.h \
   include/linux/elf-em.h \
-  /home/hyunwoo82.park/kernel/kernel/arch/arm/include/asm/elf.h \
-  /home/hyunwoo82.park/kernel/kernel/arch/arm/include/asm/user.h \
+  /home/andy/2.6.35/arch/arm/include/asm/elf.h \
+  /home/andy/2.6.35/arch/arm/include/asm/user.h \
   include/linux/kobject.h \
   include/linux/sysfs.h \
   include/linux/kref.h \
@@ -3519,7 +3519,7 @@ deps_arch/arm/mach-msm/io.o := \
   include/linux/completion.h \
   include/linux/rcutree.h \
     $(wildcard include/config/no/hz.h) \
-  /home/hyunwoo82.park/kernel/kernel/arch/arm/include/asm/module.h \
+  /home/andy/2.6.35/arch/arm/include/asm/module.h \
     $(wildcard include/config/arm/unwind.h) \
   include/trace/events/module.h \
   include/trace/define_trace.h \
@@ -3528,7 +3528,7 @@ deps_arch/arm/mach-msm/io.o := \
   arch/arm/mach-msm/include/mach/msm_iomap-7xxx.h \
     $(wildcard include/config/vmsplit/2g.h) \
     $(wildcard include/config/lge/4g/ddr.h) \
-  /home/hyunwoo82.park/kernel/kernel/arch/arm/include/asm/mach/map.h \
+  /home/andy/2.6.35/arch/arm/include/asm/mach/map.h \
   arch/arm/mach-msm/include/mach/board.h \
     $(wildcard include/config/msm/bus/scaling.h) \
     $(wildcard include/config/crypto/dev/qcrypto.h) \
@@ -3548,7 +3548,7 @@ deps_arch/arm/mach-msm/io.o := \
     $(wildcard include/config/pm/sleep.h) \
     $(wildcard include/config/pm/runtime.h) \
     $(wildcard include/config/pm/ops.h) \
-  /home/hyunwoo82.park/kernel/kernel/arch/arm/include/asm/device.h \
+  /home/andy/2.6.35/arch/arm/include/asm/device.h \
     $(wildcard include/config/dmabounce.h) \
   include/linux/pm_wakeup.h \
     $(wildcard include/config/pm.h) \
@@ -3568,7 +3568,7 @@ deps_arch/arm/mach-msm/io.o := \
     $(wildcard include/config/migration.h) \
   include/linux/limits.h \
   include/linux/ioctl.h \
-  /home/hyunwoo82.park/kernel/kernel/arch/arm/include/asm/ioctl.h \
+  /home/andy/2.6.35/arch/arm/include/asm/ioctl.h \
   include/asm-generic/ioctl.h \
   include/linux/kdev_t.h \
   include/linux/dcache.h \
@@ -3592,7 +3592,7 @@ deps_arch/arm/mach-msm/io.o := \
   include/linux/sunrpc/msg_prot.h \
   include/linux/inet.h \
   include/linux/fcntl.h \
-  /home/hyunwoo82.park/kernel/kernel/arch/arm/include/asm/fcntl.h \
+  /home/andy/2.6.35/arch/arm/include/asm/fcntl.h \
   include/asm-generic/fcntl.h \
   include/linux/err.h \
   include/linux/mod_devicetable.h \
@@ -3608,7 +3608,7 @@ deps_arch/arm/mach-msm/io.o := \
     $(wildcard include/config/att/wakeup.h) \
     $(wildcard include/config/att/battery.h) \
   include/linux/delay.h \
-  /home/hyunwoo82.park/kernel/kernel/arch/arm/include/asm/delay.h \
+  /home/andy/2.6.35/arch/arm/include/asm/delay.h \
   include/linux/interrupt.h \
     $(wildcard include/config/generic/irq/probe.h) \
     $(wildcard include/config/proc/fs.h) \
@@ -3657,23 +3657,23 @@ deps_arch/arm/mach-msm/io.o := \
     $(wildcard include/config/aio.h) \
     $(wildcard include/config/mmu/notifier.h) \
   include/linux/auxvec.h \
-  /home/hyunwoo82.park/kernel/kernel/arch/arm/include/asm/auxvec.h \
+  /home/andy/2.6.35/arch/arm/include/asm/auxvec.h \
   include/linux/page-debug-flags.h \
     $(wildcard include/config/page/poisoning.h) \
     $(wildcard include/config/page/debug/something/else.h) \
-  /home/hyunwoo82.park/kernel/kernel/arch/arm/include/asm/mmu.h \
+  /home/andy/2.6.35/arch/arm/include/asm/mmu.h \
     $(wildcard include/config/cpu/has/asid.h) \
-  /home/hyunwoo82.park/kernel/kernel/arch/arm/include/asm/cputime.h \
+  /home/andy/2.6.35/arch/arm/include/asm/cputime.h \
   include/asm-generic/cputime.h \
   include/linux/sem.h \
   include/linux/ipc.h \
-  /home/hyunwoo82.park/kernel/kernel/arch/arm/include/asm/ipcbuf.h \
-  /home/hyunwoo82.park/kernel/kernel/arch/arm/include/asm/sembuf.h \
+  /home/andy/2.6.35/arch/arm/include/asm/ipcbuf.h \
+  /home/andy/2.6.35/arch/arm/include/asm/sembuf.h \
   include/linux/signal.h \
-  /home/hyunwoo82.park/kernel/kernel/arch/arm/include/asm/signal.h \
+  /home/andy/2.6.35/arch/arm/include/asm/signal.h \
   include/asm-generic/signal-defs.h \
-  /home/hyunwoo82.park/kernel/kernel/arch/arm/include/asm/sigcontext.h \
-  /home/hyunwoo82.park/kernel/kernel/arch/arm/include/asm/siginfo.h \
+  /home/andy/2.6.35/arch/arm/include/asm/sigcontext.h \
+  /home/andy/2.6.35/arch/arm/include/asm/siginfo.h \
   include/asm-generic/siginfo.h \
   include/linux/proportions.h \
   include/linux/seccomp.h \
@@ -3683,7 +3683,7 @@ deps_arch/arm/mach-msm/io.o := \
   include/linux/plist.h \
     $(wildcard include/config/debug/pi/list.h) \
   include/linux/resource.h \
-  /home/hyunwoo82.park/kernel/kernel/arch/arm/include/asm/resource.h \
+  /home/andy/2.6.35/arch/arm/include/asm/resource.h \
   include/asm-generic/resource.h \
   include/linux/hrtimer.h \
     $(wildcard include/config/high/res/timers.h) \
@@ -3702,13 +3702,13 @@ deps_arch/arm/mach-msm/io.o := \
   include/linux/uio.h \
   include/linux/ftrace_irq.h \
     $(wildcard include/config/ftrace/nmi/enter.h) \
-  /home/hyunwoo82.park/kernel/kernel/arch/arm/include/asm/hardirq.h \
-  /home/hyunwoo82.park/kernel/kernel/arch/arm/include/asm/irq.h \
+  /home/andy/2.6.35/arch/arm/include/asm/hardirq.h \
+  /home/andy/2.6.35/arch/arm/include/asm/irq.h \
   arch/arm/mach-msm/include/mach/irqs.h \
   arch/arm/mach-msm/include/mach/irqs-7xxx.h \
   include/linux/irq_cpustat.h \
   include/linux/leds-pmic8058.h \
-  /home/hyunwoo82.park/kernel/kernel/arch/arm/include/asm/clkdev.h \
+  /home/andy/2.6.35/arch/arm/include/asm/clkdev.h \
 
 arch/arm/mach-msm/io.o: $(deps_arch/arm/mach-msm/io.o)
 
