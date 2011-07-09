@@ -73,6 +73,11 @@ static int try_to_freeze_tasks(bool sig_only)
 		if (!todo || time_after(jiffies, end_time))
 			break;
 
+		if (pm_wakeup_pending()) {
+			wakeup = true;
+			break;
+		}
+
 		/*
 		 * We need to retry, but first give the freezing tasks some
 		 * time to enter the regrigerator.

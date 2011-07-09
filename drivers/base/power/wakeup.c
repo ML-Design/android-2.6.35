@@ -554,19 +554,19 @@ static void pm_wakeup_update_hit_counts(void)
  * the old value was stored.  Check if the current number of wakeup events being
  * processed is zero.
  */
-bool pm_check_wakeup_events(void)
+bool pm_wakeup_pending(void)
 {
 	unsigned long flags;
-	bool ret = true;
+	bool ret = false;
 
 	spin_lock_irqsave(&events_lock, flags);
 	if (events_check_enabled) {
-		ret = ((unsigned int)atomic_read(&event_count) == saved_count)
-			&& !atomic_read(&events_in_progress);
-		events_check_enabled = ret;
+		ret = ((unsigned int)atomic_read(&event_count) != saved_count)
+			|| atomic_read(&events_in_progress);
+		events_check_enabled = !ret;
 	}
 	spin_unlock_irqrestore(&events_lock, flags);
-	if (!ret)
+	if (ret)
 		pm_wakeup_update_hit_counts();
 	return ret;
 }
