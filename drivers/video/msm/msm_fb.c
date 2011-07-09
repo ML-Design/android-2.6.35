@@ -110,7 +110,7 @@ static int msm_fb_ioctl(struct fb_info *info, unsigned int cmd,
 			unsigned long arg);
 static int msm_fb_mmap(struct fb_info *info, struct vm_area_struct * vma);
 
-#if CONFIG_LGE_GRAM_REFRESH_PATCH
+#ifdef CONFIG_LGE_GRAM_REFRESH_PATCH
 static struct fb_var_screeninfo *last_var;
 static struct fb_info *last_info;
 static struct early_suspend additional_early_suspend;
@@ -629,7 +629,7 @@ static void memset32_io(u32 __iomem *_ptr, u32 val, size_t count)
 {
 	count >>= 2;
 	while (count--)
-		writel(val, _ptr++);
+		*(_ptr++)=val;
 }
 #endif
 
@@ -664,18 +664,6 @@ static void msmfb_early_resume(struct early_suspend *h)
 	msm_fb_resume_sub(mfd);
 }
 
-#if CONFIG_LGE_GRAM_REFRESH_PATCH
-static void msmfb_early_suspend_early(struct early_suspend *h)
-{
-	/* do nothing */
-}
-
-static void msmfb_late_resume_late(struct early_suspend *h)
-{
-	memset((void *)last_info->screen_base, 0, last_info->fix.smem_len);
-	msm_fb_pan_display(last_var, last_info);
-}
-#endif
 #endif
 
 void msm_fb_set_backlight(struct msm_fb_data_type *mfd, __u32 bkl_lvl)
@@ -1196,13 +1184,6 @@ static int msm_fb_register(struct msm_fb_data_type *mfd)
 		mfd->early_suspend.level = EARLY_SUSPEND_LEVEL_DISABLE_FB - 2;
 		register_early_suspend(&mfd->early_suspend);
 	}
-
-#if CONFIG_LGE_GRAM_REFRESH_PATCH
-	additional_early_suspend.suspend = msmfb_early_suspend_early;
-	additional_early_suspend.resume = msmfb_late_resume_late;
-	additional_early_suspend.level = EARLY_SUSPEND_LEVEL_DISABLE_FB - 10;
-	register_early_suspend(&additional_early_suspend);
-#endif
 #endif
 
 #ifdef MSM_FB_ENABLE_DBGFS
@@ -1405,8 +1386,9 @@ static int msm_fb_pan_display(struct fb_var_screeninfo *var,
 	struct mdp_dirty_region *dirtyPtr = NULL;
 	struct msm_fb_data_type *mfd = (struct msm_fb_data_type *)info->par;
 
-	last_var = var;
-	last_info = info;
+
+//	last_var = var;
+//	last_info = info;
 
 	if ((!mfd->op_enable) || (!mfd->panel_power_on))
 		return -EPERM;
@@ -2629,6 +2611,7 @@ static void msmfb_set_color_conv(struct mdp_ccs *p)
 			writel(p->bv[i], MDP_CSC_POST_BV2n(i));
 		#endif
 
+		dsb();
 		/* MDP cmd block disable */
 		mdp_pipe_ctrl(MDP_CMD_BLOCK, MDP_BLOCK_POWER_OFF, FALSE);
 	} else {
@@ -2641,6 +2624,7 @@ static void msmfb_set_color_conv(struct mdp_ccs *p)
 		for (i = 0; i < MDP_BV_SIZE; i++)
 			writel(p->bv[i], MDP_CSC_PRE_BV1n(i));
 
+		dsb();
 		/* MDP cmd block disable */
 		mdp_pipe_ctrl(MDP_CMD_BLOCK, MDP_BLOCK_POWER_OFF, FALSE);
 	}
@@ -2780,6 +2764,7 @@ static int msm_fb_ioctl(struct fb_info *info, unsigned int cmd,
 
 			mdp_pipe_ctrl(MDP_CMD_BLOCK, MDP_BLOCK_POWER_ON, FALSE);
 			writel(grp_id, MDP_FULL_BYPASS_WORD43);
+			dsb();
 			mdp_pipe_ctrl(MDP_CMD_BLOCK, MDP_BLOCK_POWER_OFF,
 				      FALSE);
 			break;
