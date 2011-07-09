@@ -443,6 +443,15 @@ struct dev_pm_info {
 };
 
 /*
+ * Power domains provide callbacks that are executed during system suspend,
+ * hibernation, system resume and during runtime PM transitions along with
+ * subsystem-level and driver-level callbacks.
+ */
+struct dev_power_domain {
+       struct dev_pm_ops       ops;
+};
+
+/*
  * The PM_EVENT_ messages are also used by drivers implementing the legacy
  * suspend framework, based on the ->suspend() and ->resume() callbacks common
  * for suspend and hibernation transitions, according to the rules below.
